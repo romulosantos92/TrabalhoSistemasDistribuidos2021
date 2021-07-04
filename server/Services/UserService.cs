@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace server
 {
-    public class UserService : User.UserBase
+    public class UserService : Users.UsersBase
     {
         private readonly ILogger<UserService> _logger;
         public UserService(ILogger<UserService> logger)
@@ -19,18 +19,25 @@ namespace server
         {
             //Get users from the database
             List<UserResponse> users = new List<UserResponse>();
-            users.add(new UserResponse() { firstName = "First1", lastName = "Last1", address = "Address1", email = "Email1"});
-            users.add(new UserResponse() { firstName = "First2", lastName = "Last2", address = "Address2", email = "Email2"});
-            users.add(new UserResponse() { firstName = "First3", lastName = "Last3", address = "Address3", email = "Email3"});
-            users.add(new UserResponse() { firstName = "First4", lastName = "Last4", address = "Address4", email = "Email4"});
-            users.add(new UserResponse() { firstName = "First5", lastName = "Last5", address = "Address5", email = "Email5"});
+    
+            users.Add(new UserResponse() { FirstName = "First1", LastName = "Last1", Address = "Address1", Email = "Email1"});
+            users.Add(new UserResponse() { FirstName = "First2", LastName = "Last2", Address = "Address2", Email = "Email2"});
+            users.Add(new UserResponse() { FirstName = "First3", LastName = "Last3", Address = "Address3", Email = "Email3"});
+            users.Add(new UserResponse() { FirstName = "First4", LastName = "Last4", Address = "Address4", Email = "Email4"});
+            users.Add(new UserResponse() { FirstName = "First5", LastName = "Last5", Address = "Address5", Email = "Email5"});
             return users;
         }
 
-        public override GetUsers(UserRequest request, IServerStreamWriter<UserResponse> responseStream,
+        public override async Task GetUsers(UserRequest request, IServerStreamWriter<UserResponse> responseStream,
          ServerCallContext context)
         {
-            var users = getUsersFromDb();
+            var users = getUsersFromDb(request.CompanyId);
+            foreach(UserResponse user in users)
+            {
+                //emulate a long running proccess
+                await Task.Delay(1000);
+                await responseStream.WriteAsync(user);
+            }
         }
     }
 }
